@@ -6,10 +6,10 @@ function onReady() {
   addToDoForm.addEventListener('submit', (event) => {
     event.preventDefault()
 
-    // get the text
+    // get the text.
     let title = newToDoText.value;
 
-    // create a new li
+    // create a new li.
     let newLi = document.createElement('li');
 
     newLi.classList.add('mdl-list__item')

@@ -1,69 +1,78 @@
 function onReady() {
+  var toDos = [];
   const addToDoForm = document.getElementById('addToDoForm');
-  const newToDoText = document.getElementById('newToDoText');
-  const toDoList = document.getElementById('toDoList');
 
-  addToDoForm.addEventListener('submit', (event) => {
-    event.preventDefault()
+  const savedToDos = localStorage.getItem('savedToDos');
+  if (savedToDos != null) {
+    toDos = JSON.parse(savedToDos);
+  }
 
-    // get the text.
-    let title = newToDoText.value;
+  let id = 0
 
-    // create a new li.
-    let newLi = document.createElement('li');
+  function createNewToDo() {
+    const newToDoText = document.getElementById('newToDoText');
+    if (!newToDoText.value) {
+      return;
+    }
 
-    newLi.classList.add('mdl-list__item')
-
-    // create a new input
-    let checkbox = document.createElement('input');
-
-    let label = document.createElement('label');
-
-    let span = document.createElement('span');
-
-    label.classList.add('mdl-checkbox');
-    label.classList.add('mdl-js-checkbox');
-    label.classList.add('mdl-js-ripple-effect');
-
-    checkbox.classList.add('checkbox');
-    checkbox.classList.add('mdl-checkbox__input');
-
-    span.textContent = title;
-
-    let deleteButton = document.createElement('button');
-
-
-    deleteButton.classList.add('deleteButton');
-    deleteButton.classList.add('mdl-button');
-    deleteButton.classList.add('mdl-js-button');
-    deleteButton.classList.add('mdl-button--raised');
-    deleteButton.classList.add('mdl-button--colored');
-
-
-    deleteButton.textContent = "delete";
-    deleteButton.addEventListener('click', () => {
-      toDoList.removeChild(newLi)
+    toDos.push({
+      title: newToDoText.value,
+      complete: false,
+      id: id++
     });
+    newToDoText.value = '';
 
-    label.appendChild(checkbox);
-    label.appendChild(span);
-    label.appendChild(deleteButton)
+    saveToDos();
 
-    // set the input's type to checkbox
-    checkbox.type = "checkbox";
+    renderTheUI();
+  }
 
-     // attach the checkbox to the li
-     newLi.appendChild(label);
+  function saveToDos() {
+    localStorage.setItem('savedToDos', JSON.stringify(toDos));
+  }
 
-     // attach the li to the ul
-    toDoList.appendChild(newLi);
+  function renderTheUI() {
+    const toDoList = document.getElementById('toDoList');
 
-      //empty the input
-     newToDoText.value = '';
+    toDoList.textContent = '';
+
+    toDos.forEach(function(toDo) {
+      const newLi = document.createElement('li');
+      const checkbox = document.createElement('input');
 
 
-   });
+      checkbox.checked = toDo.complete
+      checkbox.addEventListener('change', event => {
+        toDo.complete = checkbox.checked
+        saveToDos();
+      })
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = "delete";
 
+      deleteButton.addEventListener('click', event => {
+        toDoList.removeChild(newLi);
+        toDos = toDos.filter(toDoItem => toDoItem.id != toDo.id);
+        saveToDos();
+        renderTheUI();
+      });
+
+
+      checkbox.type = "checkbox";
+
+      newLi.textContent = toDo.title;
+
+      toDoList.appendChild(newLi);
+      newLi.appendChild(checkbox);
+      newLi.appendChild(deleteButton);
+    });
+  }
+
+  addToDoForm.addEventListener('submit', event => {
+    event.preventDefault();
+    createNewToDo();
+  });
+
+  renderTheUI();
 }
 
 window.onload = function() {
